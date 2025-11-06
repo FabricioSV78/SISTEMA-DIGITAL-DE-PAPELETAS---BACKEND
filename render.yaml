@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: backend-sdps
+    env: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "./start.sh"
+    healthCheckPath: "/"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://tu-frontend.vercel.app
+      - key: DEBUG
+        value: false
+
+databases:
+  - name: postgres-db
+    plan: free

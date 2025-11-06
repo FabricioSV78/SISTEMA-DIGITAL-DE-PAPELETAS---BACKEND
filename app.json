@@ -1,0 +1,45 @@
+{
+  "name": "Backend SDPS - Sistema de Papeletas",
+  "description": "Backend para el Sistema de Administración de Papeletas de Empleados",
+  "repository": "https://github.com/tu-usuario/backend-sdps",
+  "logo": "",
+  "keywords": ["fastapi", "python", "postgresql", "papeletas", "rrhh"],
+  "stack": "heroku-22",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": {
+      "description": "URL de conexión a la base de datos PostgreSQL",
+      "required": true
+    },
+    "SECRET_KEY": {
+      "description": "Clave secreta para la aplicación",
+      "generator": "secret",
+      "required": true
+    },
+    "FRONTEND_URL": {
+      "description": "URL del frontend para configuración de CORS",
+      "required": true,
+      "value": "https://tu-frontend.vercel.app"
+    },
+    "DEBUG": {
+      "description": "Modo de debug (false para producción)",
+      "required": false,
+      "value": "false"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
