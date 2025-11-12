@@ -13,9 +13,12 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Fallback para desarrollo local
+# Fallback para desarrollo local (solo si no hay DATABASE_URL)
 if not DATABASE_URL:
+    print("⚠️  No se encontró DATABASE_URL, usando base de datos local")
     DATABASE_URL = "postgresql://postgres:Fa71539916@localhost/papeletas-db"
+else:
+    print("✅ Usando DATABASE_URL de variables de entorno")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
