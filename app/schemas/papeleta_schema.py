@@ -1,7 +1,8 @@
-﻿from pydantic import BaseModel, Field, validator
+﻿from pydantic import BaseModel, Field, validator, field_validator
 from datetime import date, time, datetime
 from typing import Optional
 import re
+import os
 
 class PapeletaCreate(BaseModel):
     nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo del empleado")
@@ -36,8 +37,20 @@ class PapeletaCreate(BaseModel):
                 raise ValueError('La hora de retorno debe ser posterior a la hora de salida')
         return v
 
-class PapeletaResponse(PapeletaCreate):
+class PapeletaResponse(BaseModel):
     id: int
+    nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo del empleado")
+    dni: str = Field(..., min_length=8, max_length=8, description="DNI de 8 dígitos")
+    codigo: str = Field(..., min_length=1, max_length=20, description="Código del empleado")
+    area: str = Field(..., min_length=2, max_length=100, description="Área de trabajo")
+    cargo: str = Field(..., min_length=2, max_length=100, description="Cargo del empleado")
+    motivo: str = Field(..., min_length=5, max_length=200, description="Motivo de la papeleta")
+    oficina_entidad: str = Field(..., min_length=2, max_length=100, description="Oficina o entidad")
+    fundamentacion: str = Field(..., min_length=10, description="Fundamentación detallada")
+    fecha: date = Field(..., description="Fecha de la papeleta")
+    hora_salida: time = Field(..., description="Hora de salida")
+    hora_retorno: Optional[time] = Field(None, description="Hora de retorno (opcional)")
+    regimen: str = Field(..., min_length=2, max_length=50, description="Régimen laboral")
     fecha_creacion: datetime
 
     class Config:

@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configuración para Render y desarrollo local
+# Configuración para Railway, Render y desarrollo local
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Render y Heroku proporcionan DATABASE_URL con postgres://, pero SQLAlchemy requiere postgresql://
+# Railway, Render y Heroku proporcionan DATABASE_URL con postgres://, pero SQLAlchemy requiere postgresql://
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 

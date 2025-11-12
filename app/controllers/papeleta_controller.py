@@ -30,24 +30,7 @@ def crear_papeleta(data: PapeletaCreate, db: Session):
 def obtener_todas_papeletas(db: Session) -> List[PapeletaResponse]:
     """Obtener todas las papeletas"""
     papeletas = db.query(Papeleta).all()
-    return [
-        PapeletaResponse(
-            id=papeleta.id,
-            nombre=papeleta.nombre,
-            dni=papeleta.dni,
-            codigo=papeleta.codigo,
-            area=papeleta.area,
-            cargo=papeleta.cargo,
-            motivo=papeleta.motivo,
-            oficina_entidad=papeleta.oficina_entidad,
-            fundamentacion=papeleta.fundamentacion,
-            fecha=papeleta.fecha,
-            hora_salida=papeleta.hora_salida,
-            hora_retorno=papeleta.hora_retorno,
-            regimen=papeleta.regimen,
-            fecha_creacion=papeleta.fecha_creacion
-        ) for papeleta in papeletas
-    ]
+    return [PapeletaResponse.from_orm(papeleta) for papeleta in papeletas]
 
 def obtener_papeleta_por_id(papeleta_id: int, db: Session) -> PapeletaResponse:
     """Obtener una papeleta por ID"""
@@ -59,22 +42,7 @@ def obtener_papeleta_por_id(papeleta_id: int, db: Session) -> PapeletaResponse:
             detail="Papeleta no encontrada"
         )
     
-    return PapeletaResponse(
-        id=papeleta.id,
-        nombre=papeleta.nombre,
-        dni=papeleta.dni,
-        codigo=papeleta.codigo,
-        area=papeleta.area,
-        cargo=papeleta.cargo,
-        motivo=papeleta.motivo,
-        oficina_entidad=papeleta.oficina_entidad,
-        fundamentacion=papeleta.fundamentacion,
-        fecha=papeleta.fecha,
-        hora_salida=papeleta.hora_salida,
-        hora_retorno=papeleta.hora_retorno,
-        regimen=papeleta.regimen,
-        fecha_creacion=papeleta.fecha_creacion
-    )
+    return PapeletaResponse.from_orm(papeleta)
 
 def obtener_datos_empleado_por_dni(dni: str, db: Session):
     """Obtener los datos más recientes de un empleado por DNI"""
