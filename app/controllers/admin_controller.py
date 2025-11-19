@@ -42,10 +42,14 @@ def crear_usuario(usuario_data: UsuarioCreate, db: Session):
         rol=usuario_data.rol
     )
     
-    db.add(nuevo_usuario)
-    db.commit()
-    
-    return {"message": "Usuario creado correctamente"}
+    try:
+        db.add(nuevo_usuario)
+        db.commit()
+        db.refresh(nuevo_usuario)
+        return {"message": "Usuario creado correctamente"}
+    except Exception as e:
+        db.rollback()
+        raise ValueError(f"Error al crear usuario: {str(e)}")
 
 def obtener_usuario_por_id_simple(usuario: str, dni: str, db: Session):
     """Obtener usuario recién creado por usuario y DNI"""

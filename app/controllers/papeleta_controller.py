@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from fastapi import HTTPException, status
 from app.models.papeleta_model import Papeleta
-from app.schemas.papeleta_schema import PapeletaCreate, PapeletaResponse
+from app.schemas.papeleta_schema import PapeletaCreate, PapeletaResponse, PapeletaUpdate
 from typing import List
 
 def crear_papeleta(data: PapeletaCreate, db: Session):
@@ -67,6 +67,34 @@ def obtener_datos_empleado_por_dni(dni: str, db: Session):
             "dni": papeleta_reciente.dni
         }
     }
+
+def actualizar_papeleta(papeleta_id: int, data: PapeletaUpdate, db: Session):
+    """Actualizar una papeleta existente"""
+    papeleta = db.query(Papeleta).filter(Papeleta.id == papeleta_id).first()
+    
+    if not papeleta:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Papeleta no encontrada"
+        )
+    
+    try:
+        # Actualizar solo los campos proporcionados
+        update_data = data.dict(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(papeleta, field, value)
+        
+        db.commit()
+        db.refresh(papeleta)
+        
+        return {"message": "Papeleta actualizada correctamente", "papeleta": PapeletaResponse.from_orm(papeleta)}
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar papeleta: {str(e)}"
+        )
 
 def eliminar_papeleta(papeleta_id: int, db: Session):
     """Eliminar una papeleta por ID"""

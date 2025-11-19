@@ -5,7 +5,11 @@ import enum
 
 class RolUsuario(enum.Enum):
     rrhh = "rrhh"
+    rrhh_vista = "rrhh-vista"
     administrador = "administrador"
+    
+    def __str__(self):
+        return self.value
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -14,4 +18,4 @@ class Usuario(Base):
     nombre_completo = Column(String(100), nullable=False)
     usuario = Column(String(50), unique=True, nullable=False)
     dni = Column(String(8), unique=True, nullable=False)
-    rol = Column(Enum(RolUsuario), nullable=False)
+    rol = Column(Enum(RolUsuario, values_callable=lambda obj: [e.value for e in obj]), nullable=False)

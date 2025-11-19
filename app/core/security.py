@@ -53,8 +53,17 @@ def require_admin(current_user: Usuario = Depends(get_current_user)) -> Usuario:
     return current_user
 
 def require_rrhh(current_user: Usuario = Depends(get_current_user)) -> Usuario:
-    """Validar que el usuario actual sea de RRHH"""
+    """Validar que el usuario actual sea de RRHH (con permisos de escritura)"""
     if current_user.rol != RolUsuario.rrhh:
+        raise HTTPException(
+            status_code=403,
+            detail="Se requieren permisos de RRHH"
+        )
+    return current_user
+
+def require_rrhh_or_vista(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+    """Validar que el usuario actual sea de RRHH o RRHH-Vista (lectura)"""
+    if current_user.rol not in [RolUsuario.rrhh, RolUsuario.rrhh_vista]:
         raise HTTPException(
             status_code=403,
             detail="Se requieren permisos de RRHH"
