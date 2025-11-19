@@ -23,19 +23,7 @@ class PapeletaCreate(BaseModel):
         if not re.match(r'^\d{8}$', v):
             raise ValueError('DNI debe contener exactamente 8 dígitos')
         return v
-
-    @validator('fecha')
-    def validate_fecha(cls, v):
-        if v < date.today():
-            raise ValueError('La fecha no puede ser anterior a hoy')
-        return v
-
-    @validator('hora_retorno')
-    def validate_hora_retorno(cls, v, values):
-        if v and 'hora_salida' in values:
-            if v <= values['hora_salida']:
-                raise ValueError('La hora de retorno debe ser posterior a la hora de salida')
-        return v
+    
 
 class PapeletaResponse(BaseModel):
     id: int
@@ -75,19 +63,7 @@ class PapeletaUpdate(BaseModel):
         if v is not None and not re.match(r'^\d{8}$', v):
             raise ValueError('DNI debe contener exactamente 8 dígitos')
         return v
-
-    @validator('fecha')
-    def validate_fecha(cls, v):
-        if v is not None and v < date.today():
-            raise ValueError('La fecha no puede ser anterior a hoy')
-        return v
-
-    @validator('hora_retorno')
-    def validate_hora_retorno(cls, v, values):
-        if v and 'hora_salida' in values and values['hora_salida']:
-            if v <= values['hora_salida']:
-                raise ValueError('La hora de retorno debe ser posterior a la hora de salida')
-        return v
+    
 
 class EmpleadoData(BaseModel):
     nombre: str

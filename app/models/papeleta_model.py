@@ -9,7 +9,7 @@ class Papeleta(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), nullable=False)
     dni = Column(String(8), nullable=False, index=True)  # Índice para búsquedas rápidas
-    codigo = Column(String(20), nullable=False)
+    codigo = Column(String(20), nullable=False, unique=True)
     area = Column(String(100), nullable=False)
     cargo = Column(String(100), nullable=False)
     motivo = Column(String(200), nullable=False)

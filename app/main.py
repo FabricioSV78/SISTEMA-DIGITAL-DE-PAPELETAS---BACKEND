@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes import auth_routes, admin_routes, rrhh_routes
 from app.database import create_tables, create_default_admin
 import os
+# Validation error handler
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.requests import Request
 # Importar los modelos para que SQLAlchemy los reconozca
 from app.models import papeleta_model, usuario_model
 
@@ -32,6 +36,21 @@ def startup_event():
 app.include_router(auth_routes.router)
 app.include_router(admin_routes.router)
 app.include_router(rrhh_routes.router)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Formatea errores de validación de Pydantic a { errors: [{field,message}, ...] } con 422."""
+    errors = []
+    for err in exc.errors():
+        loc = err.get('loc', [])
+        if loc and loc[0] == 'body':
+            field = '.'.join(str(x) for x in loc[1:]) if len(loc) > 1 else ''
+        else:
+            field = '.'.join(str(x) for x in loc)
+        errors.append({"field": field, "message": err.get('msg', '')})
+
+    return JSONResponse(status_code=422, content={"errors": errors}, media_type="application/json")
 
 # Health check endpoint para Railway
 @app.get("/health")

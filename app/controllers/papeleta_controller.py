@@ -1,12 +1,19 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
 from fastapi import HTTPException, status
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 from app.models.papeleta_model import Papeleta
 from app.schemas.papeleta_schema import PapeletaCreate, PapeletaResponse, PapeletaUpdate
 from typing import List
 
 def crear_papeleta(data: PapeletaCreate, db: Session):
     """Crear una nueva papeleta"""
+    # Verificar que no exista ya una papeleta con el mismo código
+    existing = db.query(Papeleta).filter(Papeleta.codigo == data.codigo).first()
+    if existing:
+        return JSONResponse(status_code=409, content={"error": {"field": "codigo", "code": "conflict", "message": "Código de papeleta ya existe"}}, media_type="application/json")
+
     nueva_papeleta = Papeleta(
         nombre=data.nombre,
         dni=data.dni,
@@ -22,10 +29,16 @@ def crear_papeleta(data: PapeletaCreate, db: Session):
         regimen=data.regimen
     )
     
-    db.add(nueva_papeleta)
-    db.commit()
-    
-    return {"message": "Papeleta registrada correctamente"}
+    try:
+        db.add(nueva_papeleta)
+        db.commit()
+        return {"message": "Papeleta registrada correctamente"}
+    except IntegrityError as ie:
+        db.rollback()
+        return JSONResponse(status_code=409, content={"error": {"field": "codigo", "code": "conflict", "message": "Código de papeleta ya existe"}}, media_type="application/json")
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(status_code=500, content={"error": {"field": None, "code": "internal_error", "message": "Error creando papeleta"}}, media_type="application/json")
 
 def obtener_todas_papeletas(db: Session) -> List[PapeletaResponse]:
     """Obtener todas las papeletas"""
@@ -81,20 +94,29 @@ def actualizar_papeleta(papeleta_id: int, data: PapeletaUpdate, db: Session):
     try:
         # Actualizar solo los campos proporcionados
         update_data = data.dict(exclude_unset=True)
+
+        # Si intentan cambiar el código, validar unicidad antes del commit
+        if 'codigo' in update_data:
+            nuevo_codigo = update_data['codigo']
+            conflict = db.query(Papeleta).filter(Papeleta.codigo == nuevo_codigo, Papeleta.id != papeleta_id).first()
+            if conflict:
+                return JSONResponse(status_code=409, content={"error": {"field": "codigo", "code": "conflict", "message": "Código de papeleta ya existe"}}, media_type="application/json")
+
         for field, value in update_data.items():
             setattr(papeleta, field, value)
-        
+
         db.commit()
         db.refresh(papeleta)
-        
+
         return {"message": "Papeleta actualizada correctamente", "papeleta": PapeletaResponse.from_orm(papeleta)}
-    
-    except Exception as e:
+
+    except IntegrityError:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al actualizar papeleta: {str(e)}"
-        )
+        # Race condition: another request pudo haber creado el mismo código
+        return JSONResponse(status_code=409, content={"error": {"field": "codigo", "code": "conflict", "message": "Código de papeleta ya existe"}}, media_type="application/json")
+    except Exception:
+        db.rollback()
+        return JSONResponse(status_code=500, content={"error": {"field": None, "code": "internal_error", "message": "Error al actualizar papeleta"}}, media_type="application/json")
 
 def eliminar_papeleta(papeleta_id: int, db: Session):
     """Eliminar una papeleta por ID"""
